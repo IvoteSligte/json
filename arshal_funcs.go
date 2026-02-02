@@ -262,7 +262,7 @@ func MarshalToFunc[T any](fn func(*jsontext.Encoder, T) error) *Marshalers {
 // The input []byte must not be mutated.
 // The input []byte and value T must not be retained outside the function call.
 // It may not return [SkipFunc].
-func UnmarshalFunc[T any](fn func([]byte, T) error) *Unmarshalers {
+func UnmarshalFunc[T any](fn func([]byte, *T) error) *Unmarshalers {
 	t := reflect.TypeFor[T]()
 	assertCastableTo(t, false)
 	typFnc := typedUnmarshaler{
@@ -272,7 +272,7 @@ func UnmarshalFunc[T any](fn func([]byte, T) error) *Unmarshalers {
 			if err != nil {
 				return err // must be a syntactic or I/O error
 			}
-			v, _ := reflect.TypeAssert[T](va.castTo(t))
+			v, _ := reflect.TypeAssert[*T](va.Value)
 			err = fn(val, v)
 			if err != nil {
 				err = wrapSkipFunc(err, "unmarshal function of type func([]byte, T) error")
